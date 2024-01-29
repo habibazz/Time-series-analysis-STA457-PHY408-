@@ -1,0 +1,172 @@
+---
+title: "STA457 - assignment 1"
+author: "Habiba Zaghloul"
+date: "25/01/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+library(astsa)
+```
+## Question 1
+
+1a.
+
+```{r, include=TRUE, echo=FALSE}
+set.seed(6807)
+s_HZ = c(rep(0,100), 10*exp(-(1:100)/20)*cos((2*pi*1:100)/4)) #formula for our model
+x_HZ = s_HZ + rnorm(200) #simulate 200 random variables (white noise) and add 
+#the signal to complete the model
+plot.ts(x_HZ, ylab = "" , main = "Signal Plus Noise Model - 1")
+```
+1b.
+
+```{r, echo=FALSE}
+set.seed(6807)
+s2_HZ = c(rep(0,100), 10*exp(-(1:100)/200)*cos((2*pi*1:100)/4))
+x2_HZ = s2_HZ + rnorm(200) #simulate 200 random variables (white noise) and add 
+#the signal to complete the model
+plot.ts(x2_HZ, ylab = "", main = "Signal Plus Noise Model - 2") #plotting the signal
+#+ noise model
+```
+1c.
+
+The appearance of the series in (a) resembles the explosion graph in figure 1.7. I say this because both seem to have a constant trend around 0 until a sudden peak, for a relatively short amount of time and then the amplitude decreases again and stays around 0. The main difference between these two graphs is that there is a small peak at the start of the explosion graph that we don't see in the graph we plotted here.
+Another similarity may be that if we multiplied our time scale here by 10, the time frames for when the peak starts and ends would be roughly the same. In this assignment our peak starts at 100 and ends by 150 (approxmately) and the explosion peak starts around 1100 and is over by 1500.
+
+The second signal plus noise graph we plotted is similar to the earthquake plot in figure 1.7. The similarities here are consistent around 0 however the amplitude suddenly increases to a point and then starts decreasing ever so slowly. The behaviour overall would be roughly the same if we multiplied our time scale here by 10. We see the sudden increase at t=100 (above) and t=1200 (figure 1.7). Both figures show random variation past this point.
+
+## c) I
+```{r, echo=FALSE}
+signal_HZ = exp(-(1:100)/20)
+plot.ts(signal_HZ, ylab = "", main = "signal modulator 1")
+```
+
+## c) II
+```{r, echo=FALSE}
+signal2_HZ = exp(-(1:100)/200) #formula of the signal
+plot.ts(signal2_HZ, ylab = "", main = "signal modulator 2") #plot signal modulator
+```
+We can tell that the 2 graphs are both decreasing. However, one is clearly 
+linear with a constant slope and one is non-linear, -log(x) looking graph. Both 
+have the same scale for time.
+
+
+
+1d.
+We are given that the mean of the Gaussian white noise is 0 so we need to plot 
+the expression in s that isn't 0.
+The mean of the model in a and b, respectively, are
+```{r, echo=FALSE}
+mu_1 = mean(x_HZ) #finding the mean of our model
+mu_2 = mean(x2_HZ)
+mu_1
+mu_2
+```
+
+
+```{r, echo=FALSE}
+set.seed(6807)
+xmean1 = 10*exp(-(1:100)/20)*cos(2*pi*1:100/4) #the mean function that we want to plot
+xmean2 = 10*exp(-(1:100)/200)*cos(2*pi*1:100/4)
+plot.ts(xmean1, main = "Mean function - Model 1") #plot mean function
+plot.ts(xmean2, main = "Mean function - model 2") 
+```
+The two plots for $u_x(t)$ are as given above
+
+## Question 2
+
+2a.
+After doing a linear regression, we obtain the values needed for
+our model:
+```{r, echo=FALSE, include=FALSE}
+trend_HZ = time(jj) - 1970 #center time around 0
+quarter_HZ = factor(cycle(jj))
+jjreg = lm(log(jj)~0 + trend_HZ + quarter_HZ, na.action = NULL) #removed the
+#intercept for our model
+summary(jjreg) #summary table for the linear regression we just performed
+```
+$y = 0.167172t + 1.052793a_1 + 1.080916a_2 + 1.151024a_3 + 0.882266a_4 + \epsilon$
+
+We used ANOVA to test for the significance of our parameters and in the  table 
+below we can see that the p-values are well below the threshold 0.05. Also, 
+from our linear regression summary the p-value we got for our model was 2.2e-16
+so our model is a good fit for our data.
+
+```{r, echo=FALSE}
+anova(jjreg) #outputs anova table summary
+```
+2b.
+The estimated average annual increase in the logged earnings per share is
+1.052793+1.080916+1.151024+0.882266 = 
+```{r, echo=FALSE}
+1.052793+1.080916+1.151024+0.882266
+```
+2c.
+Third quarter: 1.151024
+
+Fourth quarter: 0.882266
+
+Third - fourth = 
+```{r, echo=FALSE}
+dif = 1.151024-0.882266
+dif
+```
+There is a decrease of 0.268758 when we go from the third quarter to the fourth.
+The percentage it decreases is
+```{r, echo=FALSE}
+(dif/1.151024)*100 #finding the percentage decrease from third quarter to fourth quarter
+```
+2d.
+When we add the intercept, one of our $Q_i$ becomes negative and we know thats
+not possible because the only values $Q_i$ takes are 0 and 1.
+```{r, echo=FALSE, include=FALSE}
+jjreg_int = lm(log(jj)~trend_HZ + quarter_HZ, na.action = NULL) #perform a log linear regression on j&j data
+summary(jjreg_int) #tells us about the p-values, std errors, estimates for our model (among other information)
+```
+2e.
+The model appears to fit the data well. We can see the fitted line roughly
+increases at the same speed as the model. The residuals look white since we
+don't see an underlying trend in our plot.
+
+```{r, echo=FALSE}
+plot(log(jj), main = "Johnson & Johnson") #plots the log of original data
+lines(fitted(jjreg), col = "blue") #adds a line for the regression model
+plot(log(jj)-fitted(jjreg), main = "Residuals") #plot residuals
+```
+
+## Question 3
+
+There are 4 different cases for the autocovariance function.
+
+Remembering that $h=|s-t|$,
+
+$h=0$ we get $\gamma(t,t) = cov(w_{t-1},w_{t-1}) + cov(1.2w_t,1.2w_t) + cov(w_{t+1},w_{t+1}) = 3.44\sigma^2$
+
+$h=1$ we get $\gamma(t,t+1) = 1.2cov(w_t,w_t) + 1.2cov(w_{t+1},w_{t+1}) = 2.4\sigma^2$
+
+$h=2$ we get $\gamma(t,t+2) = cov(w_{t+1},w_{t+1}) = \sigma^2$
+
+$h>2$ we get $\gamma(h) = 0$
+
+The autocorrelation function for $h=|s-t|$ is
+
+$h=0$ we get $\rho(0) = 1$
+
+$h=1$ we get $\rho(1) = 2.4\sigma^2/3.44\sigma^2 = 0.6977$
+
+$h=2$ we get $\rho(2) = \sigma^2/3.44\sigma^2 = 0.2907$
+
+$h>2$ we get $\rho(h) = 0$
+
+```{r, echo=FALSE}
+set.seed(6807)
+x_t = rnorm(300) #simulate data
+avg_HZ = filter(x_t, sides = 2, filter = c(1,1.2,1))[-(1:50)] #remove the first 50, sides=2 meaning a value before and after
+acf(avg_HZ, na.action = na.pass, main = "ACF") #plot acf graph
+```
+
